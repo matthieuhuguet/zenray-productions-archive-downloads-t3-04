@@ -1,0 +1,142 @@
+{
+  "$doc": "Interface de parametres du visuel. C'est le SEUL fichier de valeurs. Les gabarits de hda/ n'en contiennent aucune. Cascade : instance > famille > tokens.",
+
+  "canvas": {
+    "active": "4:5",
+    "$note": "format repris de l'image de reference fournie (1440x1800 = 4:5)",
+    "formats": {
+      "4:5":  { "w": 1080, "h": 1350 },
+      "1:1":  { "w": 1080, "h": 1080 },
+      "9:16": { "w": 1080, "h": 1920 },
+      "16:9": { "w": 1920, "h": 1080 }
+    }
+  },
+
+  "output": {
+    "targetLongEdge": 3840,
+    "maxScale": 4,
+    "$note": "facteur = plus petit entier tel que facteur * grand_cote >= 3840, borne a maxScale. 4:5 -> x3 -> 3240x4050."
+  },
+
+  "tokens": {
+    "color": {
+      "bg":        "#0B0A09",
+      "cream":     "#EDE7DE",
+      "white":     "#FFFFFF",
+      "chip":      "#FFFFFF",
+      "chipEdge":  "#D8D2C8",
+      "scoreInk":  "#FFFFFF",
+      "rankInk":   "#EDE7DE"
+    },
+    "gradient": {
+      "cool":      ["#0B4A93", "#2F8CD6"],
+      "coolScore": ["#FAB552", "#ED882A"],
+      "warm":      ["#ED882A", "#FAB552"],
+      "warmScore": ["#FAB552", "#ED882A"],
+      "$angle": 90
+    },
+    "font": {
+      "dir":     "file:///Users/zenray/Library/Fonts",
+      "display": "AnthropicSans-Black.ttf",
+      "strong":  "AnthropicSans-Bold.ttf",
+      "body":    "AnthropicSans-Medium.ttf",
+      "italic":  "AnthropicSans-MediumItalic.ttf",
+      "emoji":   "Apple Color Emoji"
+    },
+    "radius": { "bar": 4, "chip": 3, "score": 4 }
+  },
+
+  "families": {
+    "rankRow": {
+      "$doc": "20 instances. Une seule definition. Ne jamais dupliquer ce gabarit.",
+      "rankW": 46,
+      "rankGap": 12,
+      "rankSize": 31,
+      "barW": 372,
+      "barH": 41,
+      "barPadL": 7,
+      "flagW": 40,
+      "flagH": 27,
+      "flagGap": 13,
+      "flagInset": 2,
+      "flagSource": "emoji",
+      "$flagSource": "emoji | svg | image. emoji = drapeau systeme exact, legerement ondule. svg = jeu plat a fournir dans flags/.",
+      "nameSize": 21,
+      "scoreW": 79,
+      "scoreSize": 22,
+      "rowPitch": 49,
+      "variantRule": "warm si le pays appartient a l'Asie du Sud-Est (signature editoriale seasia), cool sinon"
+    },
+    "textDisplay": {
+      "$doc": "5 instances. Meme gabarit, seuls les parametres changent.",
+      "color": "cream",
+      "align": "left",
+      "lineHeight": 1.05,
+      "tracking": -0.015
+    },
+    "logo": {
+      "wordSize": 40,
+      "subSize": 15,
+      "subGap": 4,
+      "dotSize": 13,
+      "dotColor": "#2F8CD6"
+    },
+    "slot": {
+      "$doc": "Emplacements d'images non fournies. src a null = rien n'est dessine, la zone reste vide. On n'invente aucune photo."
+    }
+  },
+
+  "instances": {
+    "logo":      { "word": "seasia", "sub": "stats", "x": 990, "y": 34, "anchor": "right" },
+
+    "titleL1":   { "text": "20 Countries with Most",   "size": 63, "weight": "display", "x": 90, "y": 196 },
+    "titleL2":   { "text": "Beautiful Women in Asia",  "size": 63, "weight": "display", "x": 90, "y": 262 },
+    "subtitle":  { "text": "Top 20 Beautiful Women in Asia, according to Insider Monkey", "size": 24, "weight": "body", "x": 90, "y": 337 },
+    "scoreHeadL":{ "text": "Score", "size": 17, "weight": "body", "x": 431, "y": 383 },
+    "scoreHeadR": { "text": "Score", "size": 17, "weight": "body", "x": 901, "y": 383 },
+    "source":    { "text": "Source: Insider Monkey", "size": 19, "weight": "italic", "x": 90, "y": 1246 },
+
+    "columns": [
+      { "x": 90,  "y": 408 },
+      { "x": 560, "y": 408 }
+    ],
+
+    "slots": [
+      {
+        "id": "backdrop-photo",
+        "$what": "porte sombre texturee, plein cadre, derriere tout le reste",
+        "src": null,
+        "x": 0, "y": 0, "w": 1080, "h": 1350, "z": 0
+      },
+      {
+        "id": "foreground-photo",
+        "$what": "les deux femmes en ao dai, bas du cadre, devant les barres",
+        "src": null,
+        "x": 0, "y": 830, "w": 1080, "h": 520, "z": 40
+      }
+    ],
+
+    "rows": [
+      { "rank": 1,  "country": "South Korea", "flag": "KR", "score": "1",    "variant": "cool" },
+      { "rank": 2,  "country": "Japan",       "flag": "JP", "score": "0.95", "variant": "cool" },
+      { "rank": 3,  "country": "Vietnam",     "flag": "VN", "score": "0.9",  "variant": "warm" },
+      { "rank": 4,  "country": "Philippines", "flag": "PH", "score": "0.85", "variant": "warm" },
+      { "rank": 5,  "country": "Iran",        "flag": "IR", "score": "0.8",  "variant": "cool" },
+      { "rank": 6,  "country": "Malaysia",    "flag": "MY", "score": "0.75", "variant": "warm" },
+      { "rank": 7,  "country": "India",       "flag": "IN", "score": "0.7",  "variant": "cool" },
+      { "rank": 8,  "country": "China",       "flag": "CN", "score": "0.65", "variant": "cool" },
+      { "rank": 9,  "country": "Singapore",   "flag": "SG", "score": "0.6",  "variant": "warm" },
+      { "rank": 10, "country": "Thailand",    "flag": "TH", "score": "0.55", "variant": "warm" },
+      { "rank": 11, "country": "Indonesia",   "flag": "ID", "score": "0.5",  "variant": "warm" },
+      { "rank": 12, "country": "Hong Kong",   "flag": "HK", "score": "0.45", "variant": "cool" },
+      { "rank": 13, "country": "Macau",       "flag": "MO", "score": "0.4",  "variant": "cool" },
+      { "rank": 14, "country": "Bhutan",      "flag": "BT", "score": "0.35", "variant": "cool" },
+      { "rank": 15, "country": "Taiwan",      "flag": "TW", "score": "0.3",  "variant": "cool" },
+      { "rank": 16, "country": "Kazakhstan",  "flag": "KZ", "score": "0.25", "variant": "cool" },
+      { "rank": 17, "country": "Sri Lanka",   "flag": "LK", "score": "0.2",  "variant": "cool" },
+      { "rank": 18, "country": "Pakistan",    "flag": "PK", "score": "0.15", "variant": "cool" },
+      { "rank": 19, "country": "Myanmar",     "flag": "MM", "score": "0.1",  "variant": "warm" },
+      { "rank": 20, "country": "Laos",        "flag": "LA", "score": "0.05", "variant": "warm" }
+    ]
+  }
+}
