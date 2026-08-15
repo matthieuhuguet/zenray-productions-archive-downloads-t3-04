@@ -1,0 +1,95 @@
+#!/bin/bash
+# Renders every slide-*.html in this folder to PNG, at 1x and 2x.
+#
+#   ./render.sh            renders all slides
+#   ./render.sh slide-2    renders one
+#
+# Output goes to out/ , kept separate from the sources so the working folder
+# stays readable and the finished files are trivial to grab, upload or drag:
+#   out/<name>.png   2160x2700  (4:5)
+#
+# ONE file per slide, not two. A 1x export next to a 2x one is pure duplication:
+# the 2x carries strictly more detail, and anything that needs 1080x1350 can be
+# downscaled in a second, whereas the reverse is impossible.
+#
+# --force-device-scale-factor=2 re-renders the page at double resolution rather
+# than upscaling a 1x bitmap, so text and vector edges stay genuinely sharp.
+# Blowing up a small PNG instead is exactly how the first attempt at this flyer
+# ended up an unusable blur.
+set -euo pipefail
+cd "$(dirname "$0")"
+
+W=1080
+H=1350
+
+CHROME="/Users/zenray/Library/Caches/ms-playwright/chromium-1228/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"
+if [[ ! -x "$CHROME" ]]; then
+    CHROME=$(ls -d "$HOME/Library/Caches/ms-playwright"/chromium-*/chrome-mac-arm64/*.app/Contents/MacOS/* 2>/dev/null | head -1 || true)
+fi
+if [[ -z "${CHROME:-}" || ! -x "$CHROME" ]]; then
+    echo "No headless Chromium found. Install one with: npx playwright install chromium"
+    exit 1
+fi
+
+mkdir -p out
+
+targets=()
+if [[ $# -gt 0 ]]; then
+    for a in "$@"; do targets+=("${a%.html}.html"); done
+else
+    for f in slide-*.html; do targets+=("$f"); done
+fi
+
+for html in "${targets[@]}"; do
+    [[ -f "$html" ]] || { echo "skip, no such file: $html"; continue; }
+    base="${html%.html}"
+
+    "$CHROME" --headless=new --disable-gpu --hide-scrollbars \
+        --force-device-scale-factor=2 \
+        --window-size=$W,$H --screenshot="out/$base.png" \
+        "file://$(pwd)/$html" >/dev/null 2>&1
+
+    # Assert the format really is 4:5. A silent wrong-size export is worse than
+    # a loud failure: Instagram would crop it and nobody would know why.
+    python3 - "$base" $W $H <<'PY'
+import sys
+from PIL import Image
+base, w, h = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+ok = True
+for path, ew, eh in ((f"out/{base}.png", w*2, h*2),):
+    got = Image.open(path).size
+    flag = "ok" if got == (ew, eh) else f"WRONG, expected {ew}x{eh}"
+    if got != (ew, eh): ok = False
+    print(f"  {path:28s} {got[0]}x{got[1]}  {flag}")
+sys.exit(0 if ok else 1)
+PY
+
+    # Instagram refuses anything above 8 Mo. A flattened flyer PNG (full-bleed
+    # photo background, no transparency) is a wasteful format for that limit —
+    # convert to JPEG the moment it's crossed, quality searched down from 95
+    # until it fits, and drop the oversized PNG so nobody uploads it by mistake.
+    python3 - "$base" <<'PY'
+import sys, os
+from PIL import Image
+base = sys.argv[1]
+png = f"out/{base}.png"
+limit = 8 * 1024 * 1024
+size = os.path.getsize(png)
+if size <= limit:
+    print(f"  {png:28s} {size/1024/1024:.1f} Mo  ok")
+else:
+    im = Image.open(png).convert("RGB")
+    jpg = f"out/{base}.jpg"
+    for q in (95, 92, 90, 88, 85):
+        im.save(jpg, quality=q, subsampling=0)
+        new_size = os.path.getsize(jpg)
+        if new_size <= limit:
+            break
+    os.remove(png)
+    print(f"  {png:28s} {size/1024/1024:.1f} Mo  > 8 Mo, converted -> {jpg} "
+          f"({new_size/1024/1024:.1f} Mo, q{q})")
+PY
+done
+
+echo
+echo "Done. Files in out/ — $((W*2))x$((H*2)), 4:5."
